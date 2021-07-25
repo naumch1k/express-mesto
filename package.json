@@ -1,0 +1,30 @@
+{
+  "name": "express-mesto",
+  "version": "1.0.0",
+  "description": "Backend for portfolio project at Yandex.Practicum",
+  "main": "app.js",
+  "scripts": {
+    "lint": "npx eslint",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/naumch1k/express-mesto.git"
+  },
+  "author": "Irina Naumchik",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/naumch1k/express-mesto/issues"
+  },
+  "homepage": "https://github.com/naumch1k/express-mesto#readme",
+  "devDependencies": {
+    "eslint": "^7.31.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "nodemon": "^2.0.12"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
