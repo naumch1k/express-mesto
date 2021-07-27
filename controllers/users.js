@@ -8,7 +8,7 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.id)
+  User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
         res.status(StatusCodes.NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
@@ -16,7 +16,13 @@ module.exports.getUserById = (req, res) => {
       }
       res.send(user);
     })
-    .catch(() => res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(StatusCodes.BAD_REQUEST).send({ message: 'Невалидный id' });
+        return;
+      }
+      res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 module.exports.createUser = (req, res) => {
