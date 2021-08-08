@@ -11,6 +11,24 @@ module.exports.getUsers = (req, res) => {
     .catch(() => res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' }));
 };
 
+module.exports.getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        res.status(StatusCodes.NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
+        return;
+      }
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(StatusCodes.BAD_REQUEST).send({ message: 'Невалидный id' });
+        return;
+      }
+      res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
+    });
+};
+
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
