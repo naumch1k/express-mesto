@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
+// const { login, createUser } = require('./controllers/users');
 const StatusCodes = require('./utils/utils');
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
@@ -26,6 +28,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// app.post('/signin', login);
+// app.post('/signup', createUser);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));

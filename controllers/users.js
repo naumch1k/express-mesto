@@ -1,6 +1,9 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const StatusCodes = require('../utils/utils');
+
+// const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -49,6 +52,33 @@ module.exports.createUser = (req, res) => {
           }
           res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
         });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    res.status(StatusCodes.BAD_REQUEST).send({ message: 'Переданы некорректные данные при авторизации пользователя, нужны email и пароль' });
+    return;
+  }
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'some-secret-key', // NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
+        { expiresIn: '7d' },
+      );
+
+      res.cookie('jwt', token, {
+        httpOnly: true,
+        sameSite: true,
+      })
+        .end();
+    })
+    .catch((err) => {
+      res.status(StatusCodes.UNAUTHORIZED).send({ message: err.message });
     });
 };
 
