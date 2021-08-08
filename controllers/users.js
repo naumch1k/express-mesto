@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const StatusCodes = require('../utils/utils');
 
@@ -26,16 +27,28 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.status(StatusCodes.CREATED).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(StatusCodes.BAD_REQUEST).send({ message: `Переданы некорректные данные при создании пользователя: ${err}` });
-        return;
-      }
-      res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
+  if (!email || !password) {
+    res.status(StatusCodes.BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя, нужны email и пароль' });
+    return;
+  }
+
+  bcrypt.hash(req.body.password, 10)
+    .then((hash) => {
+      User.create({
+        email, password: hash, name, about, avatar,
+      })
+        .then((user) => res.status(StatusCodes.CREATED).send(user))
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            res.status(StatusCodes.BAD_REQUEST).send({ message: `Переданы некорректные данные при создании пользователя: ${err}` });
+            return;
+          }
+          res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
+        });
     });
 };
 
