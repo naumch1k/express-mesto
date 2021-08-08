@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 8,
+    select: false,
   },
   name: {
     type: String,
@@ -35,5 +36,13 @@ const userSchema = new mongoose.Schema({
     // validate: {},
   },
 });
+
+function toJSON() {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+}
+
+userSchema.methods.toJSON = toJSON;
 
 module.exports = mongoose.model('user', userSchema);
