@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 
-const auth = require('./middlewares/auth');
+const { validateSignup, validateSignin } = require('./middlewares/validators');
 const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 const StatusCodes = require('./utils/status-codes');
 const StatusMessages = require('./utils/status-messages');
 
@@ -25,8 +27,8 @@ app.use(express.urlencoded({
   extended: true,
 }));
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', validateSignin, login);
+app.post('/signup', validateSignup, createUser);
 
 app.use(auth);
 app.use('/users', require('./routes/users'));
@@ -35,6 +37,8 @@ app.use('/cards', require('./routes/cards'));
 app.use((req, res) => {
   res.status(StatusCodes.NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
 });
+
+app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = StatusCodes.DEFAULT, message } = err;
