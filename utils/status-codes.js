@@ -1,4 +1,3 @@
-// Status codes
 module.exports = {
   OK: 200,
   CREATED: 201,
@@ -6,5 +5,7 @@ module.exports = {
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
+  CONFLICT: 409,
   DEFAULT: 500,
+  MONGO_ERROR: 11000,
 };

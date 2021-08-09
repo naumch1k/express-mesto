@@ -5,7 +5,8 @@ const cookieParser = require('cookie-parser');
 
 const auth = require('./middlewares/auth');
 const { login, createUser } = require('./controllers/users');
-const StatusCodes = require('./utils/utils');
+const StatusCodes = require('./utils/status-codes');
+const StatusMessages = require('./utils/status-messages');
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -33,6 +34,18 @@ app.use('/cards', require('./routes/cards'));
 
 app.use((req, res) => {
   res.status(StatusCodes.NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
+});
+
+app.use((err, req, res, next) => {
+  const { statusCode = StatusCodes.DEFAULT, message } = err;
+
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === StatusCodes.DEFAULT ? StatusMessages.DEFAULT : message,
+    });
+
+  next();
 });
 
 app.listen(PORT);

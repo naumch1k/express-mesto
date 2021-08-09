@@ -1,60 +1,64 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
 const User = require('../models/user');
-const StatusCodes = require('../utils/utils');
+const ErrorNames = require('../utils/error-names');
+const StatusCodes = require('../utils/status-codes');
+const StatusMessages = require('../utils/status-messages');
+
+const {
+  BadRequestError, UnauthorizedError, NotFoundError, ConflictError,
+} = require('../errors/index');
 
 // const { NODE_ENV, JWT_SECRET } = process.env;
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' }));
+    .catch(next);
 };
 
-module.exports.getCurrentUser = (req, res) => {
+module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(StatusCodes.NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
-        return;
+        throw new NotFoundError(StatusMessages.NOT_FOUND);
       }
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(StatusCodes.BAD_REQUEST).send({ message: 'Невалидный id' });
-        return;
+      if (err.name === ErrorNames.CAST) {
+        throw new BadRequestError(StatusMessages.INVALID_ID);
       }
-      res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
-    });
+      next(err);
+    })
+    .catch(next);
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(StatusCodes.NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
-        return;
+        throw new NotFoundError(StatusMessages.NOT_FOUND);
       }
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(StatusCodes.BAD_REQUEST).send({ message: 'Невалидный id' });
-        return;
+      if (err.name === ErrorNames.CAST) {
+        throw new BadRequestError(StatusMessages.INVALID_ID);
       }
-      res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
-    });
+      next(err);
+    })
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     email, password, name, about, avatar,
   } = req.body;
 
   if (!email || !password) {
-    res.status(StatusCodes.BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя, нужны email и пароль' });
-    return;
+    throw new BadRequestError(StatusMessages.BAD_REQUEST);
   }
 
   bcrypt.hash(req.body.password, 10)
@@ -64,21 +68,23 @@ module.exports.createUser = (req, res) => {
       })
         .then((user) => res.status(StatusCodes.CREATED).send(user))
         .catch((err) => {
-          if (err.name === 'ValidationError') {
-            res.status(StatusCodes.BAD_REQUEST).send({ message: `Переданы некорректные данные при создании пользователя: ${err}` });
-            return;
+          if (err.name === ErrorNames.MONGO && err.code === StatusCodes.MONGO_ERROR) {
+            throw new ConflictError(StatusMessages.CONFLICT);
           }
-          res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
-        });
+          if (err.name === ErrorNames.VALIDATION) {
+            throw new BadRequestError(`Переданы некорректные данные при создании пользователя: ${err}`);
+          }
+          next(err);
+        })
+        .catch(next);
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    res.status(StatusCodes.BAD_REQUEST).send({ message: 'Переданы некорректные данные при авторизации пользователя, нужны email и пароль' });
-    return;
+    throw new BadRequestError(StatusMessages.BAD_REQUEST);
   }
 
   User.findUserByCredentials(email, password)
@@ -96,54 +102,51 @@ module.exports.login = (req, res) => {
         .end();
     })
     .catch((err) => {
-      res.status(StatusCodes.UNAUTHORIZED).send({ message: err.message });
-    });
+      throw new UnauthorizedError(`${err.message}`);
+    })
+    .catch(next);
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        res.status(StatusCodes.NOT_FOUND).send({ message: 'Пользователь с указанным _id не найден' });
-        return;
+        throw new NotFoundError(StatusMessages.NOT_FOUND);
       }
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(StatusCodes.BAD_REQUEST).send({ message: 'Невалидный id' });
-        return;
+      if (err.name === ErrorNames.CAST) {
+        throw new BadRequestError(StatusMessages.INVALID_ID);
       }
-      if (err.name === 'ValidationError') {
-        res.status(StatusCodes.BAD_REQUEST).send({ message: `Переданы некорректные данные при обновлении профиля: ${err}` });
-        return;
+      if (err.name === ErrorNames.VALIDATION) {
+        throw new BadRequestError(`Переданы некорректные данные при обновлении профиля: ${err}`);
       }
-      res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
-    });
+      next(err);
+    })
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        res.status(StatusCodes.NOT_FOUND).send({ message: 'Пользователь с указанным _id не найден' });
-        return;
+        throw new NotFoundError(StatusMessages.NOT_FOUND);
       }
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(StatusCodes.BAD_REQUEST).send({ message: 'Невалидный id' });
-        return;
+      if (err.name === ErrorNames.CAST) {
+        throw new BadRequestError(StatusMessages.INVALID_ID);
       }
-      if (err.name === 'ValidationError') {
-        res.status(StatusCodes.BAD_REQUEST).send({ message: `Переданы некорректные данные при обновлении аватара: ${err}` });
-        return;
+      if (err.name === ErrorNames.VALIDATION) {
+        throw new BadRequestError(`Переданы некорректные данные при обновлении аватара: ${err}`);
       }
-      res.status(StatusCodes.DEFAULT).send({ message: 'На сервере произошла ошибка' });
-    });
+      next(err);
+    })
+    .catch(next);
 };
