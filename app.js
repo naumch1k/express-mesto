@@ -7,9 +7,8 @@ const { errors } = require('celebrate');
 const { validateSignup, validateSignin } = require('./middlewares/validators');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const errorHandler = require('./middlewares/errorHandler');
 const { NotFoundError } = require('./errors/index');
-const StatusCodes = require('./utils/status-codes');
-const StatusMessages = require('./utils/status-messages');
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -41,16 +40,6 @@ app.all('*', () => {
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
-  const { statusCode = StatusCodes.DEFAULT, message } = err;
-
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === StatusCodes.DEFAULT ? StatusMessages.DEFAULT : message,
-    });
-
-  next();
-});
+app.use(errorHandler);
 
 app.listen(PORT);
