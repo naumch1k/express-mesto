@@ -5,12 +5,11 @@ const User = require('../models/user');
 const ErrorNames = require('../utils/error-names');
 const StatusCodes = require('../utils/status-codes');
 const StatusMessages = require('../utils/status-messages');
+const { JWT_SECRET } = require('../utils/constants');
 
 const {
   BadRequestError, UnauthorizedError, NotFoundError, ConflictError,
 } = require('../errors/index');
-
-// const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -91,7 +90,7 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        'some-secret-key', // NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
+        JWT_SECRET,
         { expiresIn: '7d' },
       );
 
