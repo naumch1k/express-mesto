@@ -99,7 +99,7 @@ module.exports.login = (req, res, next) => {
         httpOnly: true,
         sameSite: true,
       })
-        .end();
+        .send({ token });
     })
     .catch((err) => {
       throw new UnauthorizedError(`${err.message}`);
