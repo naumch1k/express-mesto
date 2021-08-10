@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
@@ -20,6 +22,14 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 const { PORT = 3000 } = process.env;
 
 const app = express();
+
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+  }),
+  helmet(),
+);
 
 app.use(cookieParser());
 app.use(express.json());
