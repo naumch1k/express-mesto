@@ -1,14 +1,18 @@
-# Проект Mesto фронтенд + бэкенд
+# Portfolio project: "Mesto" (React JS App) with User Login and Authentication
 
-## Директории
+backend for the portfolio project @ Yandex.Practicum
 
-`/routes` — папка с файлами роутера  
-`/controllers` — папка с файлами контроллеров пользователя и карточки   
-`/models` — папка с файлами описания схем пользователя и карточки  
-  
-Остальные директории вспомогательные, создаются при необходимости разработчиком
+*Read this in other languages:* [RU](https://github.com/naumch1k/express-mesto/blob/main/README.RU.md)
 
-## Запуск проекта
+## Tech
+Express JS | Node.js | MongoDB
 
-`npm run start` — запускает сервер   
-`npm run dev` — запускает сервер с hot-reload
+## Installation & Usage
+
+`npm run start`
+
+> Starts a local web server
+
+`npm run dev`
+
+> Starts a local, live-reload web server
