@@ -1,11 +1,11 @@
 # Portfolio project: "Mesto" (React JS App) with User Login and Authentication
 
+*Read this in other languages:* [RU](https://github.com/naumch1k/express-mesto/blob/main/README.RU.md)
+
 backend for the portfolio project @ [Yandex.Practicum](https://practicum.yandex.com/web/ "Web Development Program")
 
 * Frontend Hosting: [https://naumch1k.students.nomoredomains.rocks/](https://naumch1k.students.nomoredomains.rocks/)
 * [Frontend repository](https://github.com/naumch1k/react-mesto-auth)
-
-*Read this in other languages:* [RU](https://github.com/naumch1k/express-mesto/blob/main/README.RU.md)
 
 ## Tech
 Express JS | Node.js | MongoDB
